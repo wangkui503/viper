@@ -1612,6 +1612,30 @@ func (v *Viper) MergeConfigMap(cfg map[string]interface{}) error {
 	return nil
 }
 
+// MergeOverride overrides a new configuration with an existing config.
+func MergeOverride(in io.Reader) error { return v.MergeOverride(in) }
+
+func (v *Viper) MergeOverride(in io.Reader) error {
+	cfg := make(map[string]interface{})
+	if err := v.unmarshalReader(in, cfg); err != nil {
+		return err
+	}
+	return v.MergeOverrideMap(cfg)
+}
+
+// MergeOverride overrides the configuration from the map given with an existing config.
+// Note that the map given may be modified.
+func MergeOverrideMap(cfg map[string]interface{}) error { return v.MergeOverrideMap(cfg) }
+
+func (v *Viper) MergeOverrideMap(cfg map[string]interface{}) error {
+	if v.override == nil {
+		v.override = make(map[string]interface{})
+	}
+	insensitiviseMap(cfg)
+	mergeMaps(cfg, v.override, nil)
+	return nil
+}
+
 // WriteConfig writes the current configuration to a file.
 func WriteConfig() error { return v.WriteConfig() }
 
